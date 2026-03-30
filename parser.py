@@ -2,8 +2,11 @@
 
 def parse_commands(argv : list) -> dict:
     commands = {"--path": [],
+                "--help": False,
                 "--o": False}
 
+    print(argv)
+    
     i = 1
     list_len = len(argv)
 
@@ -22,8 +25,8 @@ def parse_commands(argv : list) -> dict:
                 i += 1
             continue
 
-        elif arg == "--o":
-            commands["--o"] = True
+        elif arg in ('--o', "--help"):
+            commands[arg] = True
         else:
             raise ValueError(f"Error: Unknown argument: {arg}")
         i += 1
