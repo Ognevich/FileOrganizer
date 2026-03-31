@@ -2,25 +2,45 @@ import os
 from pathlib import Path
 import shutil
 import extensions
+from config import PATH, HELP, SORT
 
-def check_path(commands : dict) -> bool:
-    if commands["--path"]:
+def handle_help(commands : dict) -> bool:
+    if check_help(commands):
+        execute_help()
+        return True 
+    return False  
+
+def validate_commands(commands : dict):
+    validate_path_argument(commands)
+    res = validate_directories(commands[PATH])
+    if res:
+        raise ValueError(f"directories {','.join(res)} doesn't exists")
+
+    check_specifiers(commands)
+
+def run_actions(commands : dict):
+    if commands[SORT]:
+        organize_files(commands[PATH])
+
+def validate_path_argument(commands : dict) -> bool:
+    if commands[PATH]:
         return True
-    raise ValueError("Error: argument '--path' not found")
+    raise ValueError(f"Error: argument {PATH} not found")
 
 def check_help(commands : dict) -> bool:
-    return commands.get('--help', False)
+    return commands.get(HELP, False)
 
-def check_specifiers(act_dict : dict):
-    is_active = 0
-    for key, value in act_dict.items():
-        is_active = is_active + 1 if key != "--path" and value else is_active + 0 
+def check_specifiers(commands : dict):
+    active = any(
+        key != PATH and value
+        for key, value in commands.items()
+    )
 
-    if not is_active:
-        msg = "Error: A program must have at least one specifier.\n To see all specifiers type --help command"
+    if not active:
+        msg = f"Error: A program must have at least one specifier.\n To see all specifiers type {HELP} command"
         raise ValueError(msg)
 
-def error_directories(directories: list) -> list:
+def validate_directories(directories: list) -> list:
     return [
         str(Path(dir).expanduser())
         for dir in directories
@@ -31,9 +51,9 @@ def execute_help():
     
     text = (
         "------------------------HELP-----------------------\n"
-        "--path <folder list> -- adding directories to check\n"
-        "--o                  -- sort files by directory\n"
-        "--help               -- show help\n"
+        f"{PATH} <folder list>  -- adding directories to check\n"
+        f"{SORT}                -- sort files by directory\n"
+        f"{HELP}                -- show help\n"
     )
             
     print(text)
@@ -51,13 +71,21 @@ def organize_files(dir_list : list):
                 target_folder = path/category
                 target_folder.mkdir(exist_ok=True)
 
-                shutil.move(str(item), str(target_folder / item.name))
-                print(f"Moved {item.name} -> {category}")
+                target = target_folder / item.name
+
+                if target.exists():
+                    target = target_folder / f"{item.stem}_copy{item.suffix}"
+
+                try:
+                    shutil.move(str(item), str(target))
+                    print(f"Moved {item.name} -> {category}")
+                except Exception as e:
+                    print(f"Error moving {item}: {e}")
                 
 def get_category(file_path : Path) -> str:
     ext = file_path.suffix.lower()
-    for category, ext_turple in extensions.CATEGORIES.items():
-        if ext in ext_turple:
+    for category, ext_tuple in extensions.CATEGORIES.items():
+        if ext in ext_tuple:
             return category
     return "other"
 
@@ -70,3 +98,5 @@ def get_dir_info(path : Path):
         print(item.is_file())
         print(item.is_dir())
         print("-----")
+
+    

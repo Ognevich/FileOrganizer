@@ -3,24 +3,20 @@ import parser
 import sys
 
 def run():
-    commands = parser.parse_commands(sys.argv)
-    define_action(commands)
+    try:
+        commands = parser.parse_commands(sys.argv)
+        execute_commands(commands)
+    except ValueError as e:
+        print(f"{e}")
+        sys.exit(1)
 
-def define_action(act_dict : dict):
+def execute_commands(commands : dict):
 
-    if command_handler.check_help(act_dict):
-        command_handler.execute_help()
-        return
-
-    command_handler.check_path(act_dict)
-    res = command_handler.error_directories(act_dict["--path"])
-    if res:
-        raise ValueError(f"directories {','.join(res)} doesn't exists")
-
-    command_handler.check_specifiers(act_dict)
-
-    if act_dict['--o']:
-        command_handler.organize_files(act_dict['--path'])
+    if command_handler.handle_help(commands):
+        return 
+    
+    command_handler.validate_commands(commands)
+    command_handler.run_actions(commands)
 
 
     
