@@ -1,5 +1,6 @@
 import pytest
 from config import PATH, SORT, HELP
+import config
 from parser import parse_commands
 
 def test_single_path():
@@ -30,6 +31,13 @@ def test_sort_flag():
     result = parse_commands(argv)
 
     assert result[SORT] is True
+
+def test_dry_run_flag():
+    argv = ["main.py", config.DRY_RUN]
+        
+    result = parse_commands(argv)
+
+    assert result[config.DRY_RUN] == True
 
 def test_combined_args():
     argv = ["main.py", PATH, "folder1", SORT]

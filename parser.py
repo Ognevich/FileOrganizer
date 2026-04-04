@@ -1,9 +1,10 @@
-from config import PATH, HELP, SORT
+import config
 
 def parse_commands(argv : list) -> dict:
-    commands = {PATH: [],
-                HELP: False,
-                SORT: False}
+    commands = {config.PATH: [],
+                config.HELP: False,
+                config.SORT: False,
+                config.DRY_RUN: False}
     
     i = 1
     list_len = len(argv)
@@ -12,18 +13,18 @@ def parse_commands(argv : list) -> dict:
         
         arg = argv[i]
         
-        if arg == PATH:
+        if arg == config.PATH:
             i += 1
             if i >= list_len:
                 raise ValueError("Error: missing <folder_name> argument after '--path' ")
             if  argv[i].startswith("--"):
                 raise ValueError("Error: missing <folder_name> argument '--path' ")
             while i < list_len and not argv[i].startswith("--"):
-                commands[PATH].append(argv[i])
+                commands[config.PATH].append(argv[i])
                 i += 1
             continue
 
-        elif arg in (SORT, HELP):
+        elif arg in (config.SORT,config.HELP, config.DRY_RUN):
             commands[arg] = True
         else:
             raise ValueError(f"Error: Unknown argument: {arg}")
