@@ -46,12 +46,12 @@ DOCUMENTS = (
     ".odt", ".ods", ".odp"
 )
 CATEGORIES = {
-    "images": IMAGES,
-    "text": TEXT,
-    "code": CODE,
-    "executables": EXECUTABLES,
-    "archives": ARCHIVES,
-    "audio": AUDIO,
-    "video": VIDEO,
-    "documents": DOCUMENTS,
+    "IMG": IMAGES,
+    "TXT": TEXT,
+    "CODE": CODE,
+    "EXE": EXECUTABLES,
+    "ARCH": ARCHIVES,
+    "AUDIO": AUDIO,
+    "VIDEO": VIDEO,
+    "DOC": DOCUMENTS,
 }

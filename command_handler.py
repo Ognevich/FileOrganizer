@@ -3,6 +3,8 @@ from pathlib import Path
 import shutil
 import extensions
 import config
+import utils
+from datetime import datetime
 
 def validate_commands(commands : dict):
     validate_path_argument(commands)
@@ -37,14 +39,14 @@ def move_file(item: Path, base_path: Path, dry_mode: bool):
         target = target_folder / f"{item.stem}_copy{item.suffix}"
 
     if dry_mode:
-        print(f"[DRY RUN] {item} -> {target}")
+        utils.print_sort_info(category,item,target_folder,dry_mode=True)
         return
 
     target_folder.mkdir(exist_ok=True)
 
     try:
         shutil.move(str(item), str(target))
-        print(f"Moved {item} -> {target}")
+        utils.print_sort_info(category, item, target_folder)
     except Exception as e:
         print(f"Error moving {item}: {e}")
 
@@ -100,6 +102,11 @@ def execute_help():
             
     print(text)
 
+def create_log_folder():
+    LOG_DIR = Path(config.LOG_FOLDER)
+    LOG_DIR.mkdir(exist_ok=True)
+
+
 # DEBUGGING 
 def get_dir_info(path : Path):
     for item in path.iterdir():
@@ -110,4 +117,3 @@ def get_dir_info(path : Path):
         print(item.is_dir())
         print("-----")
 
-    

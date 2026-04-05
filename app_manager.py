@@ -12,6 +12,9 @@ def run():
 
 def execute_commands(commands : dict):
 
+    command_handler.create_log_folder()
+
+
     if command_handler.handle_help(commands):
         return 
     

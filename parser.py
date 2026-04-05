@@ -9,7 +9,7 @@ def parse_commands(argv : list) -> dict:
                     config.RECURSIVE: False
                 }}
     
-    flags = (config.SORT,config.HELP, config.DRY_RUN, config.RECURSIVE)
+    flags = (config.SORT,config.HELP, config.DRY_RUN, config.RECURSIVE, config.UNDO)
 
     i = 1
     list_len = len(argv)
