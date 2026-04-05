@@ -28,16 +28,16 @@ def test_get_category_unknown_extension(tmp_path):
 
 def test_specifiers_raises():
     commands = {PATH: ["folder1"],
-                HELP: False,
-                SORT: False}
+                "flags": {HELP: False,
+                            SORT: False}}
     
     with pytest.raises(ValueError):
         command_handler.check_specifiers(commands)
 
 def test_specifiers_with_ok():
     commands = {PATH: ["folder1"],
-                HELP: True,
-                SORT: False}
+                "flags": {HELP: True,
+                            SORT: False}}
     
     command_handler.check_specifiers(commands)
 
@@ -69,3 +69,24 @@ def test_organize_dry_run_files(tmp_path):
 
     target = tmp_path / "text" / "test.txt"
     assert file.exists()
+
+def test_organize_recursive(tmp_path):
+    file = tmp_path / "text.txt"
+    file.write_text("hello")
+
+    new_folder = tmp_path / "new_folder"
+    new_folder.mkdir(exist_ok=True)
+
+    new_file = new_folder / "anothertext.txt"
+    new_file.write_text("text")
+
+    command_handler.organize_files([tmp_path], recursive_mode=True)
+
+    target1 = tmp_path / "text" / "text.txt"
+    target2 = tmp_path / "new_folder" / "text" / "anothertext.txt"
+
+    assert not file.exists()
+    assert not new_file.exists()
+
+    assert target1.exists()
+    assert target2.exists()

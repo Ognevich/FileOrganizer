@@ -2,10 +2,15 @@ import config
 
 def parse_commands(argv : list) -> dict:
     commands = {config.PATH: [],
-                config.HELP: False,
-                config.SORT: False,
-                config.DRY_RUN: False}
+                "flags": {
+                    config.HELP: False,
+                    config.SORT: False,
+                    config.DRY_RUN: False,
+                    config.RECURSIVE: False
+                }}
     
+    flags = (config.SORT,config.HELP, config.DRY_RUN, config.RECURSIVE)
+
     i = 1
     list_len = len(argv)
 
@@ -24,8 +29,8 @@ def parse_commands(argv : list) -> dict:
                 i += 1
             continue
 
-        elif arg in (config.SORT,config.HELP, config.DRY_RUN):
-            commands[arg] = True
+        elif arg in flags:
+            commands["flags"][arg] = True
         else:
             raise ValueError(f"Error: Unknown argument: {arg}")
         i += 1
