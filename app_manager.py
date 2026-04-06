@@ -1,6 +1,8 @@
 import command_handler
 import parser
 import sys
+import file_operations
+import config
 
 def run():
     try:
@@ -12,8 +14,7 @@ def run():
 
 def execute_commands(commands : dict):
 
-    command_handler.create_log_folder()
-
+    file_operations.create_folder(config.LOG_DIR)
 
     if command_handler.handle_help(commands):
         return 

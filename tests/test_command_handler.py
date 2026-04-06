@@ -59,7 +59,9 @@ def test_organize_files(tmp_path):
     command_handler.organize_files([tmp_path])
 
     target = tmp_path / "text" / "test.txt"
+
     assert target.exists()
+    
 
 def test_organize_dry_run_files(tmp_path):
     file = tmp_path / "test.txt"
@@ -90,3 +92,4 @@ def test_organize_recursive(tmp_path):
 
     assert target1.exists()
     assert target2.exists()
+

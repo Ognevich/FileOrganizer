@@ -8,3 +8,11 @@ def print_sort_info(category : str, item : Path, target_folder : str, dry_mode =
     print(f"{Fore.GREEN}{dry_text}{Style.RESET_ALL} "
     f"{Fore.BLUE}[{category}]{Style.RESET_ALL} "
     f"{item} -> {target_folder}")
+
+def add_operation(operations : list, item : Path, target : Path):
+    operations.append(
+        {
+            "from": str(item),
+            "to": str(target)
+        }
+    )

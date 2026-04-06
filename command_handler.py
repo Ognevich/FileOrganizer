@@ -4,7 +4,7 @@ import shutil
 import extensions
 import config
 import utils
-from datetime import datetime
+import file_operations
 
 def validate_commands(commands : dict):
     validate_path_argument(commands)
@@ -17,20 +17,34 @@ def validate_commands(commands : dict):
 
 def run_actions(commands : dict):
     if commands["flags"][config.SORT]:
-        organize_files(commands[config.PATH], commands["flags"][config.DRY_RUN], commands["flags"][config.RECURSIVE])
+        operations = organize_files(commands[config.PATH], 
+                       commands["flags"][config.DRY_RUN], 
+                       commands["flags"][config.RECURSIVE])
+        if not commands["flags"][config.DRY_RUN]:
+            file_operations.save_log(operations)
 
 
-def organize_files(dir_list: list, dry_mode: bool = False, recursive_mode: bool = False):
+def organize_files(dir_list: list, 
+                   dry_mode: bool = False, 
+                   recursive_mode: bool = False,
+                   operations = None):
+
+    if operations is None:
+        operations = []
+
     for dir_path in dir_list:
         path = Path(dir_path)
 
         for item in path.iterdir():
             if item.is_file():
-                move_file(item, path, dry_mode)
+                move_file(item, path, dry_mode, operations)
             if item.is_dir() and recursive_mode:
-                organize_files([item],dry_mode, recursive_mode)
+                organize_files([item],dry_mode, recursive_mode, operations)
+    
+    return operations
 
-def move_file(item: Path, base_path: Path, dry_mode: bool):
+
+def move_file(item: Path, base_path: Path, dry_mode: bool, operations : list):
     category = get_category(item)
     target_folder = base_path / category
     target = target_folder / item.name
@@ -46,6 +60,9 @@ def move_file(item: Path, base_path: Path, dry_mode: bool):
 
     try:
         shutil.move(str(item), str(target))
+        
+        utils.add_operation(operations, item, target)
+
         utils.print_sort_info(category, item, target_folder)
     except Exception as e:
         print(f"Error moving {item}: {e}")
@@ -102,9 +119,6 @@ def execute_help():
             
     print(text)
 
-def create_log_folder():
-    LOG_DIR = Path(config.LOG_FOLDER)
-    LOG_DIR.mkdir(exist_ok=True)
 
 
 # DEBUGGING 
