@@ -18,7 +18,10 @@ def execute_commands(commands : dict):
 
     if command_handler.handle_help(commands):
         return 
+    elif command_handler.handle_undo(commands):
+        return
     
+
     command_handler.validate_commands(commands)
     command_handler.run_actions(commands)
 

@@ -3,10 +3,11 @@ import config
 def parse_commands(argv : list) -> dict:
     commands = {config.PATH: [],
                 "flags": {
-                    config.HELP: False,
-                    config.SORT: False,
-                    config.DRY_RUN: False,
-                    config.RECURSIVE: False
+                    config.HELP:        False,
+                    config.SORT:        False,
+                    config.DRY_RUN:     False,
+                    config.RECURSIVE:   False,
+                    config.UNDO:        False
                 }}
     
     flags = (config.SORT,config.HELP, config.DRY_RUN, config.RECURSIVE, config.UNDO)

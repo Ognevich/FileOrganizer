@@ -16,3 +16,6 @@ def add_operation(operations : list, item : Path, target : Path):
             "to": str(target)
         }
     )
+
+def amount_active_flags(flags : dict) -> int:
+    return sum(flags.values())

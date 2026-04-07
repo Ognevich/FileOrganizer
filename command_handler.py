@@ -81,13 +81,25 @@ def validate_path_argument(commands : dict) -> bool:
     raise ValueError(f"Error: argument {config.PATH} not found")
 
 def handle_help(commands : dict) -> bool:
-    if check_help(commands):
+    if check_single_flag_validation(commands, config.HELP):
         execute_help()
         return True 
     return False  
 
-def check_help(commands : dict) -> bool:
-    return commands["flags"].get(config.HELP, False)
+def handle_undo(commands : dict) -> bool:
+    
+    if check_single_flag_validation(commands, config.UNDO):
+        execute_undo()
+        return True
+    return False
+
+def check_single_flag_validation(commands : dict, flag : str) -> bool:
+    status =  commands["flags"].get(flag, False)
+
+    if utils.amount_active_flags(commands["flags"]) > 1:
+        raise ValueError(f"Error: The {flag} flag cannot be combined with other flags") 
+
+    return status 
 
 def check_specifiers(commands : dict):
     active = any(
@@ -119,7 +131,37 @@ def execute_help():
             
     print(text)
 
+def execute_undo():
 
+    filename = file_operations.find_last_log()
+    if not filename:
+        print("History is clear!")
+        return
+
+    full_path = config.LOG_FOLDER + "\\" + filename
+
+    data = file_operations.read_from_json(full_path)
+
+    for dct in data:
+
+        src = dct["to"]   
+        dst = dct["from"] 
+
+        try:
+            shutil.move(src, dst)
+
+
+            parent_dir = Path(src).parent
+
+            if parent_dir.exists() and not any(parent_dir.iterdir()):
+                parent_dir.rmdir()  
+
+        except Exception as e:
+            print(f"Error moving {src}: {e}")
+
+    path = Path(full_path)
+    path.unlink()
+    
 
 # DEBUGGING 
 def get_dir_info(path : Path):
