@@ -8,15 +8,45 @@ import file_operations
 
 def validate_commands(commands : dict):
     validate_path_argument(commands)
-    res = validate_directories(commands[config.PATH])
-    if res:
-        raise ValueError(f"directories {','.join(res)} doesn't exists")
+    
+    res_path = validate_path_directories(commands[config.PATH])
 
+    if res_path:
+        raise ValueError(f"directories {','.join(res_path)} doesn't exists")
+    
     check_specifiers(commands)
+    
+def validate_mode(commands: dict) -> bool:
+    modes = commands.get(config.MODE, [])
 
+    if not modes:
+        commands[config.MODE] = list(extensions.CATEGORIES.keys())
+        return True
+
+    normalized = [arg.upper() for arg in modes]
+
+    if not all(arg in extensions.CATEGORIES for arg in normalized):
+        return False
+
+    commands[config.MODE] = normalized
+    return True
 
 def run_actions(commands : dict):
-    if commands["flags"][config.SORT]:
+    
+    if handle_help(commands):
+        return 
+    elif commands["flags"][config.UNDO]:
+        execute_undo(commands)
+        return
+    elif commands["flags"][config.SORT]:
+
+        validate_commands(commands)
+
+        res = validate_mode(commands)
+        
+        if not res:
+            raise ValueError(f"Error: unknown mode modifier. To see all modifiers type {config.HELP}")
+
         operations = organize_files(commands[config.PATH], 
                        commands["flags"][config.DRY_RUN], 
                        commands["flags"][config.RECURSIVE])
@@ -86,20 +116,15 @@ def handle_help(commands : dict) -> bool:
         return True 
     return False  
 
-def handle_undo(commands : dict) -> bool:
-    
-    if check_single_flag_validation(commands, config.UNDO):
-        execute_undo()
-        return True
-    return False
-
 def check_single_flag_validation(commands : dict, flag : str) -> bool:
     status =  commands["flags"].get(flag, False)
+    if not status:
+        return False
 
     if utils.amount_active_flags(commands["flags"]) > 1:
         raise ValueError(f"Error: The {flag} flag cannot be combined with other flags") 
 
-    return status 
+    return True 
 
 def check_specifiers(commands : dict):
     active = any(
@@ -111,57 +136,84 @@ def check_specifiers(commands : dict):
         msg = f"Error: A program must have at least one specifier.\n To see all specifiers type {config.HELP} command"
         raise ValueError(msg)
 
-def validate_directories(directories: list) -> list:
+def validate_path_directories(directories: list) -> list:
     return [
         str(Path(dir).expanduser())
         for dir in directories
         if not Path(dir).expanduser().is_dir()
     ]
 
+def validate_mode_arguments(args : list) -> bool:
+    return any([arg for arg in args if arg not in config.modifiers])
+
 def execute_help():
     
     text = (
-        "------------------------HELP-----------------------\n"
-        f"{config.PATH} <folder list>  -- adding directories to check\n"
-        f"{config.SORT}                -- sort files in directory\n"
-        f"{config.HELP}                -- show help\n"
-        f"{config.RECURSIVE}           -- an additional flag used with {config.SORT} to sort in this directory as well as all subdirectories\n"
-        f"{config.DRY_RUN}             -- an additional flag used to execute commands in safe mode. Changes will not be applied\n"               
+        "\n====================== HELP ======================\n\n"
+        
+        "Usage:\n"
+        f"  {config.PATH} <folder1> <folder2> ...\n"
+        "      Add directories to process\n\n"
+        
+        "Main commands:\n"
+        f"  {config.SORT}\n"
+        "      Sort files in specified directories\n\n"
+        
+        f"  {config.HELP}\n"
+        "      Show this help message\n\n"
+
+        f"  {config.UNDO}\n"
+        "      Revert last operation using saved logs\n"
+        "      (works only if files were not modified or deleted manually)\n\n"
+        "Optional flags:\n"
+
+        f"  {config.RECURSIVE}\n"
+        f"      Use with {config.SORT} to process subdirectories recursively\n\n"
+        
+        f"  {config.DRY_RUN}\n"
+        "      Run in safe mode (no actual changes will be made)\n\n"
+        
+        "=================================================\n"
     )
             
     print(text)
 
-def execute_undo():
-
+def execute_undo(commands: dict):
     filename = file_operations.find_last_log()
+    
     if not filename:
         print("History is clear!")
         return
 
-    full_path = config.LOG_FOLDER + "\\" + filename
-
+    full_path = config.LOG_DIR / filename
     data = file_operations.read_from_json(full_path)
 
-    for dct in data:
+    dry_run = commands["flags"].get(config.DRY_RUN, False)
 
-        src = dct["to"]   
-        dst = dct["from"] 
+    move_back(data, dry_run)
+
+    if not dry_run:
+        full_path.unlink()
+    
+def move_back(data: list, dry_run=False):
+    for dct in data:
+        src = Path(dct["to"])
+        dst = Path(dct["from"])
+
+        if dry_run:
+            utils.print_dry_run_text(str(src), str(dst))
+            continue
 
         try:
             shutil.move(src, dst)
+            print(f"{src} -> {dst}")
 
-
-            parent_dir = Path(src).parent
-
+            parent_dir = src.parent
             if parent_dir.exists() and not any(parent_dir.iterdir()):
-                parent_dir.rmdir()  
+                parent_dir.rmdir()
 
         except Exception as e:
             print(f"Error moving {src}: {e}")
-
-    path = Path(full_path)
-    path.unlink()
-    
 
 # DEBUGGING 
 def get_dir_info(path : Path):

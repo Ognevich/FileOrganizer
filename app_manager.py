@@ -7,6 +7,7 @@ import config
 def run():
     try:
         commands = parser.parse_commands(sys.argv)
+        print(commands)
         execute_commands(commands)
     except ValueError as e:
         print(f"{e}")
@@ -15,14 +16,7 @@ def run():
 def execute_commands(commands : dict):
 
     file_operations.create_folder(config.LOG_DIR)
-
-    if command_handler.handle_help(commands):
-        return 
-    elif command_handler.handle_undo(commands):
-        return
     
-
-    command_handler.validate_commands(commands)
     command_handler.run_actions(commands)
 
 

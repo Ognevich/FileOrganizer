@@ -24,7 +24,7 @@ def find_last_log():
     if logs_name:
         return max(logs_name)
 
-def read_from_json(filepath : str):    
+def read_from_json(filepath : str) -> list:    
 
     with open(filepath, "r") as file:
         json_info = file.read()

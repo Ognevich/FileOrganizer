@@ -9,6 +9,11 @@ def print_sort_info(category : str, item : Path, target_folder : str, dry_mode =
     f"{Fore.BLUE}[{category}]{Style.RESET_ALL} "
     f"{item} -> {target_folder}")
 
+def print_dry_run_text(src : str, dest : str):
+    print(f"{Fore.GREEN}[DRY RUN] {Style.RESET_ALL}"
+          f"{src} -> {dest}")
+
+
 def add_operation(operations : list, item : Path, target : Path):
     operations.append(
         {

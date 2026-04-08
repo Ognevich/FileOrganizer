@@ -2,6 +2,7 @@ import config
 
 def parse_commands(argv : list) -> dict:
     commands = {config.PATH: [],
+                config.MODE: [],
                 "flags": {
                     config.HELP:        False,
                     config.SORT:        False,
@@ -19,17 +20,16 @@ def parse_commands(argv : list) -> dict:
         
         arg = argv[i]
         
-        if arg == config.PATH:
+        if arg in (config.PATH, config.MODE):
             i += 1
             if i >= list_len:
-                raise ValueError("Error: missing <folder_name> argument after '--path' ")
+                raise ValueError(f"Error: missing argument after {arg}' ")
             if  argv[i].startswith("--"):
-                raise ValueError("Error: missing <folder_name> argument '--path' ")
+                raise ValueError(f"Error: missing argument after {arg} ")
             while i < list_len and not argv[i].startswith("--"):
-                commands[config.PATH].append(argv[i])
+                commands[arg].append(argv[i])
                 i += 1
             continue
-
         elif arg in flags:
             commands["flags"][arg] = True
         else:

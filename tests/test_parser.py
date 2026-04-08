@@ -14,6 +14,17 @@ def test_single_path():
     assert result["flags"][config.DRY_RUN] is False
     assert result["flags"][config.RECURSIVE] is False
 
+def test_mode_flag():
+
+    argv = ["script.txt", config.PATH, "folder1", config.MODE, "-txt", "--s"]
+
+    result = parse_commands(argv)
+
+    assert result[config.MODE] == ["-txt"]
+    assert result[config.PATH] == ["folder1"]
+    assert result["flags"][config.DRY_RUN] is False
+    assert result["flags"][config.RECURSIVE] is False
+    assert result["flags"][config.SORT] is True
 
 def test_multiple_path():
     argv = ["main.py", PATH, "folder1", "folder2", "folder3"]

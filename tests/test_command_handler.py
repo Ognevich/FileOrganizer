@@ -1,8 +1,9 @@
 import pytest
 import command_handler
 from config import HELP, PATH, SORT
+import config
 
-def test_validate_directories(tmp_path):
+def  validate_path_directories(tmp_path):
     valid_dir = tmp_path
     invalid_dir = tmp_path / "not_exists"
 
@@ -17,7 +18,7 @@ def test_get_category_known_extension(tmp_path):
     file.touch()
 
     cat = command_handler.get_category(file)
-    assert cat == "text"
+    assert cat == "TXT"
 
 def test_get_category_unknown_extension(tmp_path):
     file = tmp_path / "test.unknown"
@@ -58,7 +59,7 @@ def test_organize_files(tmp_path):
 
     command_handler.organize_files([tmp_path])
 
-    target = tmp_path / "text" / "test.txt"
+    target = tmp_path / "TXT" / "test.txt"
 
     assert target.exists()
     
@@ -69,7 +70,7 @@ def test_organize_dry_run_files(tmp_path):
 
     command_handler.organize_files([tmp_path],True)
 
-    target = tmp_path / "text" / "test.txt"
+    target = tmp_path / "TXT" / "test.txt"
     assert file.exists()
 
 def test_organize_recursive(tmp_path):
@@ -84,8 +85,8 @@ def test_organize_recursive(tmp_path):
 
     command_handler.organize_files([tmp_path], recursive_mode=True)
 
-    target1 = tmp_path / "text" / "text.txt"
-    target2 = tmp_path / "new_folder" / "text" / "anothertext.txt"
+    target1 = tmp_path / "TXT" / "text.txt"
+    target2 = tmp_path / "new_folder" / "TXT" / "anothertext.txt"
 
     assert not file.exists()
     assert not new_file.exists()
@@ -93,3 +94,17 @@ def test_organize_recursive(tmp_path):
     assert target1.exists()
     assert target2.exists()
 
+def test_mode_modifiers():
+    commands = {
+        PATH: ["folder1"],
+        config.MODE: ["txt", "img"],
+        "flags": {
+            HELP: False,
+            SORT: False
+        }
+    }
+
+    result = command_handler.validate_mode(commands)
+
+    assert result is True
+    assert commands[config.MODE] == ["TXT", "IMG"]
