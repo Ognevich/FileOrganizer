@@ -48,13 +48,15 @@ def run_actions(commands : dict):
             raise ValueError(f"Error: unknown mode modifier. To see all modifiers type {config.HELP}")
 
         operations = organize_files(commands[config.PATH], 
+                                    commands[config.MODE],
                        commands["flags"][config.DRY_RUN], 
                        commands["flags"][config.RECURSIVE])
         if not commands["flags"][config.DRY_RUN]:
             file_operations.save_log(operations)
 
 
-def organize_files(dir_list: list, 
+def organize_files(dir_list: list,
+                   mode_list: list, 
                    dry_mode: bool = False, 
                    recursive_mode: bool = False,
                    operations = None):
@@ -66,10 +68,10 @@ def organize_files(dir_list: list,
         path = Path(dir_path)
 
         for item in path.iterdir():
-            if item.is_file():
+            if item.is_file() and get_category(item) in mode_list:
                 move_file(item, path, dry_mode, operations)
             if item.is_dir() and recursive_mode:
-                organize_files([item],dry_mode, recursive_mode, operations)
+                organize_files([item],mode_list,dry_mode, recursive_mode, operations)
     
     return operations
 
@@ -179,6 +181,13 @@ def execute_help():
     print(text)
 
 def execute_undo(commands: dict):
+    
+    dry_run = commands["flags"].get(config.DRY_RUN, False)
+
+    for name, value in commands["flags"].items():
+        if value and name not in (config.DRY_RUN, config.UNDO):
+            raise ValueError("Error: undo operation can only contain dry-run flag")
+    
     filename = file_operations.find_last_log()
     
     if not filename:
@@ -187,8 +196,6 @@ def execute_undo(commands: dict):
 
     full_path = config.LOG_DIR / filename
     data = file_operations.read_from_json(full_path)
-
-    dry_run = commands["flags"].get(config.DRY_RUN, False)
 
     move_back(data, dry_run)
 

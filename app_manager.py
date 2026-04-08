@@ -7,7 +7,6 @@ import config
 def run():
     try:
         commands = parser.parse_commands(sys.argv)
-        print(commands)
         execute_commands(commands)
     except ValueError as e:
         print(f"{e}")
