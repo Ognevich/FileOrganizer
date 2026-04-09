@@ -33,6 +33,18 @@ def test_multiple_path():
 
     assert result[PATH] == ["folder1", "folder2", "folder3"]
 
+def test_multiple_attributes():
+    argv = ["main.py", 
+            config.PATH, "folder1", "folder2", 
+            config.MODE, "txt", "img", 
+            config.IGNORE, ".git", ".gitignore"]
+    
+    result = parse_commands(argv)
+
+    assert result[config.PATH] == ["folder1", "folder2"]
+    assert result[config.MODE] == ["txt", "img"]
+    assert result[config.IGNORE] == [".git", ".gitignore"]
+
 def test_help():
     argv = ["main.py", HELP]
 

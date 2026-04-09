@@ -57,7 +57,7 @@ def test_organize_files(tmp_path):
     file = tmp_path / "test.txt"
     file.write_text("hello")
 
-    command_handler.organize_files([tmp_path])
+    command_handler.organize_files([tmp_path],['TXT'])
 
     target = tmp_path / "TXT" / "test.txt"
 
@@ -68,7 +68,7 @@ def test_organize_dry_run_files(tmp_path):
     file = tmp_path / "test.txt"
     file.write_text("hello")
 
-    command_handler.organize_files([tmp_path],True)
+    command_handler.organize_files([tmp_path],["TXT"],True)
 
     target = tmp_path / "TXT" / "test.txt"
     assert file.exists()
@@ -83,7 +83,7 @@ def test_organize_recursive(tmp_path):
     new_file = new_folder / "anothertext.txt"
     new_file.write_text("text")
 
-    command_handler.organize_files([tmp_path], recursive_mode=True)
+    command_handler.organize_files([tmp_path], ["TXT"],recursive_mode=True)
 
     target1 = tmp_path / "TXT" / "text.txt"
     target2 = tmp_path / "new_folder" / "TXT" / "anothertext.txt"

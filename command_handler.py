@@ -10,10 +10,13 @@ def validate_commands(commands : dict):
     validate_path_argument(commands)
     
     res_path = validate_path_directories(commands[config.PATH])
+    res_ignore = check_ignore_arguments(commands[config.IGNORE])
 
     if res_path:
         raise ValueError(f"directories {','.join(res_path)} doesn't exists")
-    
+    if res_ignore:
+        raise ValueError(f"objects  {','.join(res_ignore)} doesn't exists")
+
     check_specifiers(commands)
     
 def validate_mode(commands: dict) -> bool:
@@ -47,8 +50,11 @@ def run_actions(commands : dict):
         if not res:
             raise ValueError(f"Error: unknown mode modifier. To see all modifiers type {config.HELP}")
 
+        ignore_list = {Path(p).expanduser().resolve() for p in commands[config.IGNORE]}
+
         operations = organize_files(commands[config.PATH], 
                                     commands[config.MODE],
+                                    ignore_list,
                        commands["flags"][config.DRY_RUN], 
                        commands["flags"][config.RECURSIVE])
         if not commands["flags"][config.DRY_RUN]:
@@ -56,7 +62,8 @@ def run_actions(commands : dict):
 
 
 def organize_files(dir_list: list,
-                   mode_list: list, 
+                   mode_list: list = [], 
+                   ignore_list: Path = [],
                    dry_mode: bool = False, 
                    recursive_mode: bool = False,
                    operations = None):
@@ -68,10 +75,11 @@ def organize_files(dir_list: list,
         path = Path(dir_path)
 
         for item in path.iterdir():
-            if item.is_file() and get_category(item) in mode_list:
+
+            if item.is_file() and get_category(item) in mode_list and item.resolve() not in ignore_list: 
                 move_file(item, path, dry_mode, operations)
-            if item.is_dir() and recursive_mode:
-                organize_files([item],mode_list,dry_mode, recursive_mode, operations)
+            if item.is_dir() and recursive_mode and item.resolve() not in ignore_list:
+                organize_files([item],mode_list,ignore_list,dry_mode, recursive_mode, operations)
     
     return operations
 
@@ -145,6 +153,14 @@ def validate_path_directories(directories: list) -> list:
         if not Path(dir).expanduser().is_dir()
     ]
 
+def check_ignore_arguments(args: list) -> list:
+    return [
+        str(Path(dir).expanduser())
+        for dir in args
+        if not Path(dir).expanduser().exists()
+    ]
+
+
 def validate_mode_arguments(args : list) -> bool:
     return any([arg for arg in args if arg not in config.modifiers])
 
@@ -156,7 +172,14 @@ def execute_help():
         "Usage:\n"
         f"  {config.PATH} <folder1> <folder2> ...\n"
         "      Add directories to process\n\n"
-        
+
+        f"  {config.MODE} <cat1> <cat2> ...\n"
+        "\tAllow users to choose a category for sorting objects\n"
+        f"\tCategories: {[cat for cat in extensions.CATEGORIES.keys()]}\n\n"
+
+        f"  {config.IGNORE} <object1> <object2> ...\n"
+        "\tAdd directories or files that should not be sorted\n\n"
+
         "Main commands:\n"
         f"  {config.SORT}\n"
         "      Sort files in specified directories\n\n"
@@ -174,7 +197,8 @@ def execute_help():
         
         f"  {config.DRY_RUN}\n"
         "      Run in safe mode (no actual changes will be made)\n\n"
-        
+
+
         "=================================================\n"
     )
             
