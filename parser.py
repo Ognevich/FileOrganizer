@@ -4,6 +4,7 @@ def parse_commands(argv : list) -> dict:
     commands = {config.PATH: [],
                 config.MODE: [],
                 config.IGNORE: [],
+                config.FILE:   [],
                 "flags": {
                     config.HELP:        False,
                     config.SORT:        False,
@@ -13,7 +14,7 @@ def parse_commands(argv : list) -> dict:
                 }}
     
     flags = (config.SORT,config.HELP, config.DRY_RUN, config.RECURSIVE, config.UNDO)
-    main_attributes = (config.PATH, config.MODE, config.IGNORE)
+    main_attributes = (config.PATH, config.MODE, config.IGNORE, config.FILE)
 
     i = 1
     list_len = len(argv)

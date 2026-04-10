@@ -41,6 +41,9 @@ def run_actions(commands : dict):
     elif commands["flags"][config.UNDO]:
         execute_undo(commands)
         return
+    elif commands[config.FILE]:
+        execute_command_from_file(commands)
+        return
     elif commands["flags"][config.SORT]:
 
         validate_commands(commands)
@@ -114,6 +117,11 @@ def get_category(file_path : Path) -> str:
         if ext in ext_tuple:
             return category
     return "other"
+
+def execute_command_from_file(commands : dict):
+
+    if utils.amount_active_flags(commands["flags"]) > 0 and (commands[config.PATH] or commands[config.MODE] or commands[config.IGNORE]):
+        raise ValueError("ERROR: --file parameter should the only one") 
 
 def validate_path_argument(commands : dict) -> bool:
     if commands[config.PATH]:

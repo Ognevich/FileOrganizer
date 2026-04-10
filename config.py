@@ -9,6 +9,7 @@ RECURSIVE   = "--recursive"
 UNDO        = "--undo"
 MODE        = "--mode"
 IGNORE      = "--ignore"
+FILE        = '--file'
 #---------
 LOG_FOLDER  = "logs"
 LOG_DIR = Path(LOG_FOLDER)
